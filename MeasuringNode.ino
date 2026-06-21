@@ -1,47 +1,45 @@
-#include <WiFiManager.h>
+// Includes
 #include "NetworkCreds.h"
+#include "ADC.h"
+#include "Indicators.h"
+#include "WiFi.h"
+
+// Libraries
+#include <WiFiManager.h>
+
+
+// DEFINES
+
+
+// Global Variables
+
 
 void setup()
 {
-  // Initialize WiFi Manager
-  WiFi.mode(WIFI_STA);
-  WiFiManager wifiManager;
+  InitSerial();
+  InitIndicator();
+  InitADC();
+  InitWiFi();
 
-  // Wipe stored credentials for testing
-  // wm.resetSettings();
-
-  // Initialize Serial
-  Serial.begin(115200);
-
-  // Initialize onboard LED
-  pinMode(2, OUTPUT);
-  delay(100);
-
-  // Connect to Wi-Fi network
-  if (!wifiManager.autoConnect(ssid, password)) 
+  if(BeginWiFiConnection())
   {
-    Serial.println("Connection failed! Connect to ");
-    Serial.println(ssid);
-    Serial.println(" to configure WiFi Network Connection.");
-    // Indicate connection failure
-    digitalWrite(2, HIGH);
-    while(1);
+    // Connection Success.
+    SetFlashRate(FR_0_25_HZ);
   }
   else
   {
-    Serial.println("Connected to Wi-Fi network");
-    // Indicate connection success
-    digitalWrite(2, HIGH);
-    delay(2000);
-    digitalWrite(2,LOW);
-    delay(2000);
+    // Connection Failed. Indicate Error
+    SetFlashRate(FR_ON);
   }
 }
 
 void loop()
 {
-  digitalWrite(2, HIGH);
-  delay(1000);
-  digitalWrite(2,LOW);
-  delay(1000);
+  ServiceADC();
+  ServiceIndicator();
+}
+
+void InitSerial(void)
+{
+  Serial.begin(115200);
 }
