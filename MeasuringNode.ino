@@ -13,7 +13,7 @@
 
 
 // Filescope Variables
-
+static bool WiFiConnectionSuccess;
 
 void setup()
 {
@@ -21,17 +21,7 @@ void setup()
   // Call first to avoid time loss for other tasks.
   InitSerial();
   InitWiFi();
-
-  if(BeginWiFiConnection())
-  {
-    // Connection Success.
-    SetFlashRate(FR_0_25_HZ);
-  }
-  else
-  {
-    // Connection Failed. Indicate Error
-    SetFlashRate(FR_ON);
-  }
+  WiFiConnectionSuccess = BeginWiFiConnection();
 
   // Call this before everything else.
   InitTime();
@@ -39,6 +29,18 @@ void setup()
   InitIndicator();
   InitADC();
   SetFlashRate(FR_OFF);
+
+  // Indicate connection status
+  if(WiFiConnectionSuccess)
+  {
+    // Connection Success.
+    SetFlashRate(FR_0_25_HZ);
+  }
+  else
+  {
+    // No connection. Indicate setup is required.
+    SetFlashRate(FR_ON);
+  }
 }
 
 void loop()
