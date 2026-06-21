@@ -3,6 +3,7 @@
 #include "ADC.h"
 #include "Indicators.h"
 #include "WiFi.h"
+#include "Time.h"
 
 // Libraries
 #include <WiFiManager.h>
@@ -11,14 +12,14 @@
 // DEFINES
 
 
-// Global Variables
+// Filescope Variables
 
 
 void setup()
 {
+  // The initial WiFi connection takes a few seconds
+  // Call first to avoid time loss for other tasks.
   InitSerial();
-  InitIndicator();
-  InitADC();
   InitWiFi();
 
   if(BeginWiFiConnection())
@@ -31,12 +32,23 @@ void setup()
     // Connection Failed. Indicate Error
     SetFlashRate(FR_ON);
   }
+
+  // Call this before everything else.
+  InitTime();
+
+  InitIndicator();
+  InitADC();
+  SetFlashRate(FR_OFF);
 }
 
 void loop()
 {
-  ServiceADC();
-  ServiceIndicator();
+  // Operate everything on Tick Time
+  if(ServiceTime())
+  {
+    ServiceADC();
+    ServiceIndicator();
+  }
 }
 
 void InitSerial(void)

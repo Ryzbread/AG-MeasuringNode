@@ -1,6 +1,9 @@
 // Includes
-#include <WiFiManager.h>
 #include "NetworkCreds.h"
+
+
+// Libraries
+#include <WiFiManager.h>
 
 
 // DEFINES
