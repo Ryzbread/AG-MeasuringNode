@@ -8,7 +8,10 @@
 
 // Global Functions
 void InitWiFi(void);
-bool BeginWiFiConnection(void);
+void BeginWiFiConnection(void);
+void InitWiFiConnection(void);
+void ServiceWiFiConnection(int Data);
+bool GetConnectionStatus(void);
 
 
 #endif // WIFI_H

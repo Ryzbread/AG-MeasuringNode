@@ -3,8 +3,9 @@
 
 
 // DEFINES
-#define TICK_DURATION       5 // milliseconds
-#define NUMBER_OF_TIMERS    10
+#define TICK_DURATION           5 // milliseconds
+#define NUMBER_OF_TIMERS        10
+#define ACCEPTABLE_TIME_LOST    1 // Occurrences per second
 
 // Filescope Variables
 static unsigned long currentTime;
@@ -13,27 +14,56 @@ static bool Tick;
 
 static int TimerIndex;
 static unsigned long Timers[NUMBER_OF_TIMERS];
+
+static unsigned long TaskError; 
+static unsigned long TaskTime;
 static int OneSecondTimer;
+
 
 void InitTime(void)
 {
     currentTime = millis();
     Tick = false;
+
     TimerIndex = 0;
+
+    TaskTime = 0;
     OneSecondTimer = RegisterTimer();
     SetTimer(OneSecondTimer, 1000);
 }
 
 bool ServiceTime(void)
 {
+    // Measure task duration.
+    if(Tick)
+    {
+        TaskTime = (currentTime - millis());
+    }
+
     currentTime = millis();
     Tick = false;
 
-    if((lastTickTime + TICK_DURATION) <= currentTime)
+
+    // Detect if millis() overflows.
+    if(lastTickTime > currentTime)
     {
         Tick = true;
         lastTickTime = currentTime;
+    }
 
+    // Detect consistent task overflow
+    if(((int)currentTime - (int)(lastTickTime + TICK_DURATION)) > (int)0)
+    {
+        // We expect to miss a millisecond every ~1 hour or so. 
+        // Anything more means our tasks are exceeding the allowed tick time.
+        TaskError++;
+    }
+
+    // Normal Tick detection
+    if((lastTickTime + TICK_DURATION) <= currentTime)
+    {
+        Tick = true;
+        lastTickTime = currentTime;//(lastTickTime + TICK_DURATION);
     }
 
     if(Tick)
@@ -45,9 +75,23 @@ bool ServiceTime(void)
     // Print current time in 1 second intervals for testing.
     if(IsTimerExpired(OneSecondTimer))
     {
-        SetTimer(OneSecondTimer, 1000);
+        if(TaskError > ACCEPTABLE_TIME_LOST)
+        {
+            Serial.print("NUMBER OF TIME LOSS ERRORS DETECTED: ");   
+            Serial.println(TaskError);   
+        }
+
+        TaskError = 0;
+
+        // Log current milli time once a second for testing.
         Serial.print("One Second Timer: ");
         Serial.println(currentTime);   
+
+        // Measure and print time to complete tasks for testing.
+        Serial.print("Task duration: ");
+        Serial.println(TaskTime);
+
+        SetTimer(OneSecondTimer, 1000);
     }
 
     return Tick;

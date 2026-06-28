@@ -13,47 +13,51 @@
 
 
 // Filescope Variables
-static bool WiFiConnectionSuccess;
+static int SoilMoistureData;
 
 void setup()
 {
-  // The initial WiFi connection takes a few seconds
-  // Call first to avoid time loss for other tasks.
-  InitSerial();
-  InitWiFi();
-  WiFiConnectionSuccess = BeginWiFiConnection();
+    SoilMoistureData = 0;
 
-  // Call this before everything else.
-  InitTime();
+    // Call this before everything else.
+    InitTime();
 
-  InitIndicator();
-  InitADC();
-  SetFlashRate(FR_OFF);
+    // The initial WiFi connection takes a few seconds
+    InitSerial();
+    InitIndicator();
+    InitADC();
+    InitWiFi();
+    BeginWiFiConnection();
+    InitWiFiConnection();
 
-  // Indicate connection status
-  if(WiFiConnectionSuccess)
-  {
-    // Connection Success.
-    SetFlashRate(FR_0_25_HZ);
-  }
-  else
-  {
-    // No connection. Indicate setup is required.
-    SetFlashRate(FR_ON);
-  }
+    // Indicate connection status
+    if(GetConnectionStatus())
+    {
+        // Connection Success.
+        SetFlashRate(FR_0_25_HZ);
+    }
+    else
+    {
+        // No connection. Indicate setup is required.
+        SetFlashRate(FR_ON);
+    }
 }
 
 void loop()
 {
-  // Operate everything on Tick Time
-  if(ServiceTime())
-  {
-    ServiceADC();
-    ServiceIndicator();
-  }
+    // Operate everything on Tick Time
+    if(ServiceTime())
+    {
+        ServiceADC();
+        SoilMoistureData = GetADCReading(); // TODO: Normalize raw ADC data to 0-100%
+
+        ServiceIndicator();
+
+        ServiceWiFiConnection(SoilMoistureData);
+    }
 }
 
 void InitSerial(void)
 {
-  Serial.begin(115200);
+    Serial.begin(115200);
 }

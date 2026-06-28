@@ -6,7 +6,7 @@
 // DEFINES
 #define PIN_ADC           0
 #define ADC_BUFFER_LENGTH 200
-#define TASK_RATE         30000 // 30 seconds
+#define ADC_TASK_RATE     30000 // 30 seconds
 
 
 // Filescope Variables
@@ -29,7 +29,7 @@ void InitADC(void)
   ADCBufferIndex = 0;
 
   ADCTimerIndex = RegisterTimer();
-  SetTimer(ADCTimerIndex, TASK_RATE);
+  SetTimer(ADCTimerIndex, ADC_TASK_RATE);
 }
 
 void ServiceADC(void)
@@ -53,13 +53,13 @@ void ServiceADC(void)
   }
   AverageADCValue = (AverageADCValue / ADC_BUFFER_LENGTH);
 
-  // Print Average ADC every TASK_RATE for testing
-  if(IsTimerExpired(ADCTimerIndex))
-  {
-    SetTimer(ADCTimerIndex, TASK_RATE);
-    Serial.print("Average ADC Value: ");
-    Serial.println(AverageADCValue);
-  }
+  // Print Average ADC every ADC_TASK_RATE for testing
+  // if(IsTimerExpired(ADCTimerIndex))
+  // {
+  //   SetTimer(ADCTimerIndex, ADC_TASK_RATE);
+  //   Serial.print("Average ADC Value: ");
+  //   Serial.println(AverageADCValue);
+  // }
 }
 
 int GetADCReading(void)
